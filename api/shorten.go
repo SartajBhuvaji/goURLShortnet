@@ -2,9 +2,11 @@ package api
 
 import (
 	"encoding/json"
+	"log"
 	"net/http"
 	"strings"
 
+	"github.com/SartajBhuvaji/database"
 	"github.com/SartajBhuvaji/utils"
 )
 
@@ -19,7 +21,7 @@ type ShortenURLResponse struct {
 }
 
 // handle the URL shortening request
-func ShortenURLHandler(w http.ResponseWriter, r *http.Request) {
+func ShortenURLHandler(w http.ResponseWriter, r *http.Request, redisClient *database.RedisClient) {
 	if r.Method != http.MethodPost {
 		http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
 		return
@@ -36,8 +38,27 @@ func ShortenURLHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	enc := EncodeURL(123)
+	counter, err := redisClient.GetCounter() // flag
+	if err != nil {
+		http.Error(w, "Error fetching counter from Reddis", http.StatusInternalServerError)
+		return
+	}
+
+	log.Println("Counter: ", counter)
+
+	enc := EncodeURL(counter)
 	shortURL := "something/" + enc
+
+	// Update the counter counter++
+	err = redisClient.SetCounter("counter", counter+1)
+
+	// Add the short URL to the database
+	err = redisClient.Set(shortURL, req.URL)
+
+	if err != nil {
+		http.Error(w, "Error updating counter in Reddis", http.StatusInternalServerError)
+		return
+	}
 
 	resp := ShortenURLResponse{ShortURL: shortURL}
 	w.Header().Set("Content-Type", "application/json")
@@ -59,5 +80,4 @@ func EncodeURL(no int) string {
 	}
 
 	return utils.ReverseString(encoded.String())
-
 }

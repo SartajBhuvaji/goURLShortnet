@@ -3,6 +3,8 @@ package database
 import (
 	"context"
 	"fmt"
+	"strconv"
+	"time"
 
 	"github.com/go-redis/redis/v8"
 )
@@ -11,6 +13,13 @@ import (
 type RedisClient struct {
 	client *redis.Client
 	ctx    context.Context
+}
+
+type URLValue struct {
+	URL          string `json:"url"`
+	createdAt    string `json:"created_at"`
+	lastAccessed string `json:"last_accessed"`
+	AccessCount  int    `json:"access_count"`
 }
 
 // NewRedisClient initializes a new Redis client.
@@ -36,8 +45,8 @@ func (r *RedisClient) Ping() error {
 	return nil
 }
 
-// Set stores a key-value pair in Redis.
-func (r *RedisClient) Set(key, value string) error {
+// Set counter
+func (r *RedisClient) SetCounter(key string, value int) error {
 	err := r.client.Set(r.ctx, key, value, 0).Err()
 	if err != nil {
 		return err
@@ -46,13 +55,52 @@ func (r *RedisClient) Set(key, value string) error {
 	return nil
 }
 
+// Get Counter
+func (r *RedisClient) GetCounter() (int, error) {
+	val, err := r.client.Get(r.ctx, "counter").Result()
+	if err != nil {
+		return -1, err
+	}
+	intVal, err := strconv.Atoi(val)
+	if err != nil {
+		return -1, err
+	}
+	return intVal, nil
+}
+
+// Set stores a key-value pair in Redis.
+func (r *RedisClient) Set(originalURL, shortURL string) error {
+
+	value := URLValue{
+		URL:          shortURL,
+		createdAt:    time.Now().String(),
+		lastAccessed: time.Now().String(),
+		AccessCount:  1,
+	}
+
+	err := r.client.Set(r.ctx, originalURL, value, 0).Err()
+	if err != nil {
+		fmt.Printf("Unable to add new key '%s' to Redis: %v\n", originalURL, err)
+		return err
+	}
+	fmt.Printf("Key '%s' set successfully!\n", originalURL)
+	return nil
+}
+
 // Get retrieves the value of a given key from Redis.
-func (r *RedisClient) Get(key string) (string, error) {
-	val, err := r.client.Get(r.ctx, key).Result()
+func (r *RedisClient) Get(shortURL string) (string, error) {
+
+	var urlValue URLValue
+	err := r.client.Get(r.ctx, shortURL).Scan(&urlValue)
 	if err != nil {
 		return "", err
 	}
-	return val, nil
+
+	urlValue.lastAccessed = time.Now().String()
+	urlValue.AccessCount++
+
+	r.client.Set(r.ctx, shortURL, urlValue, 0).Err()
+	return urlValue.URL, nil
 }
 
 // Close closes the Redis client connection.
@@ -64,27 +112,3 @@ func (r *RedisClient) Close() {
 		fmt.Println("Redis connection closed.")
 	}
 }
-
-// // Main function
-// func main() {
-
-// 	// Test connection
-// 	if err := redisClient.Ping(); err != nil {
-// 		fmt.Printf("Could not connect to Redis: %v\n", err)
-// 		return
-// 	}
-
-// 	// Set a key-value pair
-// 	if err := redisClient.Set("mykey", "myvalue"); err != nil {
-// 		fmt.Printf("Error setting key: %v\n", err)
-// 		return
-// 	}
-
-// 	// Get the value of a key
-// 	value, err := redisClient.Get("mykey")
-// 	if err != nil {
-// 		fmt.Printf("Error getting key: %v\n", err)
-// 		return
-// 	}
-// 	fmt.Printf("Retrieved value: %s\n", value)
-// }

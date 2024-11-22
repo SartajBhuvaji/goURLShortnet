@@ -1,45 +1,26 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"net/http"
-	"os"
 
 	"github.com/SartajBhuvaji/api"
-	"github.com/SartajBhuvaji/database"
-	"github.com/joho/godotenv"
+	"github.com/SartajBhuvaji/utils"
 )
 
 func main() {
-	// Load the .env file
-	err := godotenv.Load()
-	if err != nil {
-		log.Fatalf("Error loading .env file: %v", err)
-	}
-
-	var redisHost string
-	var redisPassword string
-
-	// // Read from environment variables
-	redisHost = os.Getenv("REDIS_HOST")
-	redisPassword = os.Getenv("REDIS_PASSWORD")
 
 	// Create a new RedisClient
-
-	redisClient := database.NewRedisClient(redisHost, redisPassword, 0)
-	defer redisClient.Close()
-
-	// Test connection
-	if err := redisClient.Ping(); err != nil {
-		fmt.Printf("Could not connect to Redis: %v\n", err)
+	redisClient, err := utils.SetupRedis()
+	if err != nil {
 		return
-	} else {
-		fmt.Println("Connected to Redis")
 	}
+	defer redisClient.Close() // Close the connection when main() exits
 
 	// longURL --> shortURL
-	http.HandleFunc("/shorten", api.ShortenURLHandler)
+	http.HandleFunc("/shorten", func(w http.ResponseWriter, r *http.Request) {
+		api.ShortenURLHandler(w, r, redisClient)
+	})
 
 	// shortURL --> longURL
 	http.HandleFunc("/redirect", api.RedirectHandler)
