@@ -3,7 +3,12 @@ package api
 import (
 	"encoding/json"
 	"net/http"
+	"strings"
+
+	"github.com/SartajBhuvaji/utils"
 )
+
+const base62Chars = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
 
 type ShortenURLRequest struct {
 	URL string `json:"url"`
@@ -31,14 +36,28 @@ func ShortenURLHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// For simplicity
-	shortURL := "https://short.ly/" + generateShortCode(req.URL)
+	enc := EncodeURL(123)
+	shortURL := "something/" + enc
 
 	resp := ShortenURLResponse{ShortURL: shortURL}
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(resp)
 }
 
-func generateShortCode(url string) string {
-	return url[:5]
+func EncodeURL(no int) string {
+	if no == 0 {
+		return string(base62Chars[0])
+	}
+
+	base := len(base62Chars)
+	var encoded strings.Builder
+
+	for no > 0 {
+		remainder := no % base
+		encoded.WriteByte(base62Chars[remainder])
+		no /= base
+	}
+
+	return utils.ReverseString(encoded.String())
+
 }
