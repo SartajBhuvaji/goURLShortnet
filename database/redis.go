@@ -2,6 +2,7 @@ package database
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"log"
 	"strconv"
@@ -17,10 +18,20 @@ type RedisClient struct {
 }
 
 type URLValue struct {
-	URL          string `json:"url"`
-	createdAt    string `json:"created_at"`
-	lastAccessed string `json:"last_accessed"`
+	OriginalURL  string `json:"url"`
+	CreatedAt    string `json:"created_at"`
+	LastAccessed string `json:"last_accessed"`
 	AccessCount  int    `json:"access_count"`
+}
+
+// Implement the encoding.BinaryMarshaler interface
+func (u URLValue) MarshalBinary() ([]byte, error) {
+	return json.Marshal(u)
+}
+
+// Implement the encoding.BinaryUnmarshaler interface
+func (u *URLValue) UnmarshalBinary(data []byte) error {
+	return json.Unmarshal(data, u)
 }
 
 // NewRedisClient initializes a new Redis client.
@@ -73,9 +84,9 @@ func (r *RedisClient) GetCounter() (int, error) {
 func (r *RedisClient) Set(originalURL, shortURL string) error {
 
 	value := URLValue{
-		URL:          originalURL,
-		createdAt:    time.Now().String(),
-		lastAccessed: time.Now().String(),
+		OriginalURL:  originalURL,
+		CreatedAt:    time.Now().String(),
+		LastAccessed: time.Now().String(),
 		AccessCount:  1,
 	}
 
@@ -88,7 +99,7 @@ func (r *RedisClient) Set(originalURL, shortURL string) error {
 	return nil
 }
 
-// Get retrieves the value of a given key from Redis.
+// Get retrieves the original URL of a given key from Redis.
 func (r *RedisClient) Get(shortURL string) (string, error) {
 
 	var urlValue URLValue
@@ -98,11 +109,11 @@ func (r *RedisClient) Get(shortURL string) (string, error) {
 		return "", err
 	}
 
-	urlValue.lastAccessed = time.Now().String()
+	urlValue.LastAccessed = time.Now().String()
 	urlValue.AccessCount++
 
 	r.client.Set(r.ctx, shortURL, urlValue, 0).Err()
-	return urlValue.URL, nil
+	return urlValue.OriginalURL, nil
 }
 
 // Close closes the Redis client connection.

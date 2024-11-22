@@ -53,10 +53,10 @@ func ShortenURLHandler(w http.ResponseWriter, r *http.Request, redisClient *data
 	redisClient.SetCounter("counter", counter+1)
 
 	// Add the short URL to the database
-	err = redisClient.Set(shortURL, req.URL)
+	err = redisClient.Set(req.URL, shortURL)
 
 	if err != nil {
-		http.Error(w, "Error updating counter in Reddis", http.StatusInternalServerError)
+		http.Error(w, "Error storing URL in Redis", http.StatusInternalServerError)
 		return
 	}
 
