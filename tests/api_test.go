@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/SartajBhuvaji/api"
+	"github.com/SartajBhuvaji/utils"
 )
 
 func TestShortenURLHandler(t *testing.T) {
@@ -28,7 +29,19 @@ func TestShortenURLHandler(t *testing.T) {
 	rec := httptest.NewRecorder()
 
 	// call the handler
-	http.HandlerFunc(api.ShortenURLHandler).ServeHTTP(rec, req)
+	// create a redis client (assuming you have a function to do this)
+
+	redisClient, err := utils.SetupRedis()
+	if err != nil {
+		t.Fatalf("could not set up Redis: %v", err)
+	}
+
+	// create a handler function that matches http.HandlerFunc signature
+	handler := func(w http.ResponseWriter, r *http.Request) {
+		api.ShortenURLHandler(w, r, redisClient)
+	}
+
+	http.HandlerFunc(handler).ServeHTTP(rec, req)
 
 	// check the status code
 	if rec.Code != http.StatusOK {
