@@ -72,18 +72,18 @@ func (r *RedisClient) GetCounter() (int, error) {
 func (r *RedisClient) Set(originalURL, shortURL string) error {
 
 	value := URLValue{
-		URL:          shortURL,
+		URL:          originalURL,
 		createdAt:    time.Now().String(),
 		lastAccessed: time.Now().String(),
 		AccessCount:  1,
 	}
 
-	err := r.client.Set(r.ctx, originalURL, value, 0).Err()
+	err := r.client.Set(r.ctx, shortURL, value, 0).Err()
 	if err != nil {
-		fmt.Printf("Unable to add new key '%s' to Redis: %v\n", originalURL, err)
+		fmt.Printf("Unable to add new key '%s' to Redis: %v\n", shortURL, err)
 		return err
 	}
-	fmt.Printf("Key '%s' set successfully!\n", originalURL)
+	fmt.Printf("Key '%s' set successfully!\n", shortURL)
 	return nil
 }
 
