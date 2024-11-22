@@ -23,7 +23,9 @@ func main() {
 	})
 
 	// shortURL --> longURL
-	http.HandleFunc("/redirect", api.RedirectHandler)
+	http.HandleFunc("/redirect", func(w http.ResponseWriter, r *http.Request) {
+		api.RedirectHandler(w, r, redisClient)
+	})
 
 	log.Println("Server started on :8080")
 	if err := http.ListenAndServe(":8080", nil); err != nil {

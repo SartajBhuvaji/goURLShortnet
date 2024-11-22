@@ -3,6 +3,7 @@ package database
 import (
 	"context"
 	"fmt"
+	"log"
 	"strconv"
 	"time"
 
@@ -93,6 +94,7 @@ func (r *RedisClient) Get(shortURL string) (string, error) {
 	var urlValue URLValue
 	err := r.client.Get(r.ctx, shortURL).Scan(&urlValue)
 	if err != nil {
+		log.Println("Error fetching URL from Redis: ", err)
 		return "", err
 	}
 
