@@ -38,7 +38,7 @@ func ShortenURLHandler(w http.ResponseWriter, r *http.Request, redisClient *data
 		return
 	}
 
-	counter, err := redisClient.GetCounter() // flag
+	counter, err := redisClient.GetCounter()
 	if err != nil {
 		http.Error(w, "Error fetching counter from Reddis", http.StatusInternalServerError)
 		return
@@ -60,6 +60,7 @@ func ShortenURLHandler(w http.ResponseWriter, r *http.Request, redisClient *data
 		return
 	}
 
+	// Return the short URL
 	resp := ShortenURLResponse{ShortURL: shortURL}
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(resp)

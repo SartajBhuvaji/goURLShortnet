@@ -32,3 +32,5 @@ func main() {
 		log.Fatalf("Could not start server: %s\n", err)
 	}
 }
+
+// RUN: go run main.go

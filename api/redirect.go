@@ -12,29 +12,25 @@ type RedirectURLRequest struct {
 }
 
 // handle the short --> long URL redirection
+
 func RedirectHandler(w http.ResponseWriter, r *http.Request, redisClient *database.RedisClient) {
-	if r.Method != http.MethodPost {
+	if r.Method != http.MethodGet {
 		http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
 		return
 	}
 
-	var req ShortenURLRequest
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		http.Error(w, "Invalid request body", http.StatusBadRequest)
+	// Get the short URL from query parameters
+	shortUrl := r.URL.Query().Get("url")
+	if shortUrl == "" {
+		http.Error(w, "URL parameter is required", http.StatusBadRequest)
 		return
 	}
 
-	if req.URL == "" {
-		http.Error(w, "URL is required", http.StatusBadRequest)
-		return
-	}
-	shortUrl := req.URL
 	longUrl, err := redisClient.Get(shortUrl)
 	if err != nil {
-		http.Error(w, "Error fetching URL from Reddis", http.StatusInternalServerError)
+		http.Error(w, "Error fetching URL from Redis", http.StatusInternalServerError)
 		return
 	}
-	//http.Redirect(w, r, longUrl, http.StatusMovedPermanently)
 
 	response := RedirectURLRequest{
 		LongURL: longUrl,

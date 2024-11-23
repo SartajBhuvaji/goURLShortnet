@@ -1,0 +1,4 @@
+// Create a .env file with the following variables
+REDIS_HOST = "REDIS_HOST"
+REDIS_PASSWORD = "REDIS_PASSWORD"
+REDIS_DB = REDIS_DB
