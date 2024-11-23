@@ -3,9 +3,6 @@
 A lightning-fast URL shortening service built with Go and Redis, designed for high performance and reliability.
 
 [![Go](https://github.com/SartajBhuvaji/goURLShortnet/actions/workflows/go.yml/badge.svg)](https://github.com/SartajBhuvaji/goURLShortnet/actions/workflows/go.yml)
-
-[![Go Report Card](https://goreportcard.com/badge/github.com/SartajBhuvaji/goURLShortnet)](https://goreportcard.com/report/github.com/SartajBhuvaji/goURLShortnet)
-
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
 
 ## 🚀 Features
