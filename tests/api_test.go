@@ -28,9 +28,6 @@ func TestShortenURLHandler(t *testing.T) {
 	// create a response recorder
 	rec := httptest.NewRecorder()
 
-	// call the handler
-	// create a redis client (assuming you have a function to do this)
-
 	redisClient, err := utils.SetupRedis()
 	if err != nil {
 		t.Fatalf("could not set up Redis: %v", err)

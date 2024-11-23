@@ -47,7 +47,7 @@ func ShortenURLHandler(w http.ResponseWriter, r *http.Request, redisClient *data
 	log.Println("Counter: ", counter)
 
 	enc := EncodeURL(counter)
-	shortURL := "something/" + enc
+	shortURL := "www.goURLShortner/" + enc
 
 	// Update the counter counter++
 	redisClient.SetCounter("counter", counter+1)

@@ -20,7 +20,7 @@ func ReverseString(s string) string {
 }
 
 func SetupRedis() (*database.RedisClient, error) {
-	err := godotenv.Load("../.env")
+	err := godotenv.Load()
 	if err != nil {
 		log.Fatalf("Error loading .env file: %v", err)
 	}
