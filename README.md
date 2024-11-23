@@ -34,7 +34,7 @@ A lightning-fast URL shortening service built with Go and Redis, designed for hi
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/YourUsername/goURLShortner.git
+   git clone https://github.com/SartajBhuvaji/goURLShortnet.git
    cd goURLShortner
    ```
 
@@ -46,8 +46,8 @@ A lightning-fast URL shortening service built with Go and Redis, designed for hi
 3. **Configure environment**
    Create a `.env` file in the root directory:
    ```env
-   REDIS_HOST=localhost:6379
-   REDIS_PASSWORD=your_redis_password
+   REDIS_HOST="REDIS_HOST"
+   REDIS_PASSWORD="REDIS_PASSWORD"
    REDIS_DB=0
    ```
 
